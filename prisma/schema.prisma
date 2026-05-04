@@ -83,6 +83,22 @@ model WebhookEvent {
   @@index([processedAt])
 }
 
+model BoostyPost {
+  id                String           @id @default(cuid())
+  externalId        String           @unique
+  title             String
+  url               String
+  publishedAt       DateTime
+  tier              SubscriptionTier
+  rawPayload        Json
+  telegramMessageId BigInt?
+  createdAt         DateTime         @default(now())
+
+  @@index([tier])
+  @@index([publishedAt])
+  @@index([createdAt])
+}
+
 enum SubscriptionProvider {
   tribute
 }

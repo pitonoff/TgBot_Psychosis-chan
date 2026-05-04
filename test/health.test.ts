@@ -17,7 +17,10 @@ describe("GET /health", () => {
     TELEGRAM_CHANNEL_ID: BigInt(-1001234567890),
     TELEGRAM_STARS_PRICE: 100,
     TELEGRAM_INVITE_LINK_EXPIRE_HOURS: 24,
-    TRIBUTE_WEBHOOK_SECRET: "tribute-secret-123"
+    TRIBUTE_WEBHOOK_SECRET: "tribute-secret-123",
+    BOOSTY_RSS_URL: "https://example.com/rss.xml",
+    BOOSTY_POLL_INTERVAL_SECONDS: 300,
+    BOOSTY_DEFAULT_TIER: "basic"
   });
 
   afterAll(async () => {

@@ -11,13 +11,40 @@ type CreateInviteLinkResponse = {
   name?: string;
 };
 
+type SendMessageResponse = {
+  message_id: number;
+};
+
 export class TelegramService {
   constructor(private readonly config: AppConfig) {}
 
-  async sendMessage(chatId: number | bigint, text: string) {
-    return this.call("sendMessage", {
+  async sendMessage(
+    chatId: number | bigint,
+    text: string,
+    options?: {
+      parse_mode?: "HTML";
+      disable_web_page_preview?: boolean;
+    }
+  ) {
+    return this.call<SendMessageResponse>("sendMessage", {
       chat_id: String(chatId),
-      text
+      text,
+      ...options
+    });
+  }
+
+  async sendPhoto(
+    chatId: number | bigint,
+    photoUrl: string,
+    options?: {
+      caption?: string;
+      parse_mode?: "HTML";
+    }
+  ) {
+    return this.call<SendMessageResponse>("sendPhoto", {
+      chat_id: String(chatId),
+      photo: photoUrl,
+      ...options
     });
   }
 
@@ -56,16 +83,25 @@ export class TelegramService {
   }
 
   private async call<T = true>(method: string, body: Record<string, unknown>) {
-    const response = await fetch(`https://api.telegram.org/bot${this.config.TELEGRAM_BOT_TOKEN}/${method}`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(`https://api.telegram.org/bot${this.config.TELEGRAM_BOT_TOKEN}/${method}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+    } catch (error) {
+      throw new Error(
+        `Telegram API network error for ${method}: ${error instanceof Error ? error.message : "unknown error"}`
+      );
+    }
 
     if (!response.ok) {
-      throw new Error(`Telegram API request failed with status ${response.status}`);
+      const responseText = await response.text();
+      throw new Error(`Telegram API request failed for ${method} with status ${response.status}: ${responseText}`);
     }
 
     const payload = (await response.json()) as TelegramApiResponse<T>;

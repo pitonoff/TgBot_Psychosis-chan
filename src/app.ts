@@ -8,10 +8,18 @@ import { createLogger } from "./logger.js";
 import { healthRoute } from "./routes/health.js";
 import { createTelegramWebhookRoute } from "./routes/telegram-webhook.js";
 import { createTributeWebhookRoute } from "./routes/tribute-webhook.js";
+import { BoostyRepostingService } from "./services/boosty-reposting.js";
 
 export async function buildApp(config: AppConfig = getConfig()) {
+  const logger = createLogger(config);
   const app = Fastify({
-    logger: createLogger(config)
+    logger
+  });
+  const boostyRepostingService = new BoostyRepostingService(config, {
+    logger: {
+      info: (message) => logger.info(message),
+      error: (message) => logger.error(message)
+    }
   });
 
   app.addContentTypeParser("application/json", { parseAs: "string" }, (request: FastifyRequest, body, done) => {
@@ -31,7 +39,10 @@ export async function buildApp(config: AppConfig = getConfig()) {
   await app.register(createTelegramWebhookRoute(config));
   await app.register(createTributeWebhookRoute(config));
 
+  boostyRepostingService.start();
+
   app.addHook("onClose", async () => {
+    boostyRepostingService.stop();
     await prisma.$disconnect();
   });
 
