@@ -18,6 +18,7 @@ describe("GET /health", () => {
     TELEGRAM_STARS_PRICE: 100,
     TELEGRAM_INVITE_LINK_EXPIRE_HOURS: 24,
     TRIBUTE_WEBHOOK_SECRET: "tribute-secret-123",
+    ADMIN_API_TOKEN: "admin-secret-token",
     BOOSTY_RSS_URL: "https://example.com/rss.xml",
     BOOSTY_POLL_INTERVAL_SECONDS: 300,
     BOOSTY_DEFAULT_TIER: "basic"
@@ -94,5 +95,27 @@ describe("GET /health", () => {
     expect(verifyTributeSignature(rawBody, signature, "tribute-secret-123")).toBe(true);
     expect(verifyTributeSignature(rawBody, `sha256=${signature}`, "tribute-secret-123")).toBe(true);
     expect(verifyTributeSignature(rawBody, undefined, "tribute-secret-123")).toBe(false);
+  });
+
+  it("rejects unauthorized admin API access", async () => {
+    const app = await appPromise;
+
+    const routes = [
+      { method: "GET" as const, url: "/admin/users/test-user" },
+      { method: "POST" as const, url: "/admin/users/test-user/sync-access" },
+      { method: "POST" as const, url: "/admin/boosty/poll-now" },
+      { method: "GET" as const, url: "/admin/subscriptions" },
+      { method: "GET" as const, url: "/admin/webhook-events" }
+    ];
+
+    for (const route of routes) {
+      const response = await app.inject(route);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.json()).toEqual({
+        ok: false,
+        error: "Unauthorized"
+      });
+    }
   });
 });

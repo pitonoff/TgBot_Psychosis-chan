@@ -12,6 +12,7 @@ const envSchema = z.object({
   TELEGRAM_STARS_PRICE: z.coerce.number().int().positive().default(100),
   TELEGRAM_INVITE_LINK_EXPIRE_HOURS: z.coerce.number().int().positive().max(24 * 30).default(24),
   TRIBUTE_WEBHOOK_SECRET: z.string().min(16),
+  ADMIN_API_TOKEN: z.string().min(16),
   BOOSTY_RSS_URL: z.string().url(),
   BOOSTY_POLL_INTERVAL_SECONDS: z.coerce.number().int().positive(),
   BOOSTY_DEFAULT_TIER: z.enum(["basic", "premium", "vip"])

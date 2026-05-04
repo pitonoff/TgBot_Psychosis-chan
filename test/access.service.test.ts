@@ -16,6 +16,7 @@ const baseConfig: AppConfig = {
   TELEGRAM_STARS_PRICE: 100,
   TELEGRAM_INVITE_LINK_EXPIRE_HOURS: 24,
   TRIBUTE_WEBHOOK_SECRET: "tribute-secret-123",
+  ADMIN_API_TOKEN: "admin-secret-token",
   BOOSTY_RSS_URL: "https://example.com/rss.xml",
   BOOSTY_POLL_INTERVAL_SECONDS: 300,
   BOOSTY_DEFAULT_TIER: SubscriptionTier.basic
