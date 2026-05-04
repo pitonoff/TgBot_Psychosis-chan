@@ -2,9 +2,9 @@ export type TelegramUser = {
   id: number;
   is_bot: boolean;
   first_name: string;
-  last_name?: string;
-  username?: string;
-  language_code?: string;
+  last_name?: string | undefined;
+  username?: string | undefined;
+  language_code?: string | undefined;
 };
 
 export type TelegramChat = {
@@ -22,10 +22,10 @@ export type TelegramSuccessfulPayment = {
 
 export type TelegramMessage = {
   message_id: number;
-  from?: TelegramUser;
+  from?: TelegramUser | undefined;
   chat: TelegramChat;
-  text?: string;
-  successful_payment?: TelegramSuccessfulPayment;
+  text?: string | undefined;
+  successful_payment?: TelegramSuccessfulPayment | undefined;
 };
 
 export type TelegramPreCheckoutQuery = {
@@ -38,6 +38,6 @@ export type TelegramPreCheckoutQuery = {
 
 export type TelegramUpdate = {
   update_id: number;
-  message?: TelegramMessage;
-  pre_checkout_query?: TelegramPreCheckoutQuery;
+  message?: TelegramMessage | undefined;
+  pre_checkout_query?: TelegramPreCheckoutQuery | undefined;
 };

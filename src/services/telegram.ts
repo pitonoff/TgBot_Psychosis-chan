@@ -14,9 +14,9 @@ type CreateInviteLinkResponse = {
 export class TelegramService {
   constructor(private readonly config: AppConfig) {}
 
-  async sendMessage(chatId: number, text: string) {
+  async sendMessage(chatId: number | bigint, text: string) {
     return this.call("sendMessage", {
-      chat_id: chatId,
+      chat_id: String(chatId),
       text
     });
   }
@@ -29,15 +29,29 @@ export class TelegramService {
     });
   }
 
-  async createSingleUseInviteLink(memberUserId: number) {
+  async createSingleUseInviteLink(chatId: bigint, memberUserId: number, createsJoinRequest = false) {
     const expireDate = Math.floor(Date.now() / 1000) + this.config.TELEGRAM_INVITE_LINK_EXPIRE_HOURS * 60 * 60;
 
     return this.call<CreateInviteLinkResponse>("createChatInviteLink", {
-      chat_id: String(this.config.TELEGRAM_CHANNEL_ID),
-      creates_join_request: false,
+      chat_id: String(chatId),
+      creates_join_request: createsJoinRequest,
       expire_date: expireDate,
       member_limit: 1,
       name: `paid-access-${memberUserId}-${Date.now()}`
+    });
+  }
+
+  async removeUserFromChat(chatId: bigint, userId: bigint) {
+    await this.call("banChatMember", {
+      chat_id: String(chatId),
+      user_id: String(userId),
+      revoke_messages: false
+    });
+
+    await this.call("unbanChatMember", {
+      chat_id: String(chatId),
+      user_id: String(userId),
+      only_if_banned: true
     });
   }
 

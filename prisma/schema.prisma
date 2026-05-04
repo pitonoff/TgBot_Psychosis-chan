@@ -8,60 +8,98 @@ datasource db {
 }
 
 model User {
-  id             String        @id @default(cuid())
-  telegramUserId BigInt        @unique
-  username       String?
-  firstName      String
-  lastName       String?
-  languageCode   String?
-  isBot          Boolean       @default(false)
-  payments       Payment[]
-  accessGrants   AccessGrant[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                String         @id @default(cuid())
+  telegramId        BigInt?        @unique
+  telegramUsername  String?
+  email             String?
+  tributeCustomerId String?        @unique
+  subscriptions     Subscription[]
+  inviteLinks       InviteLink[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([tributeCustomerId])
+  @@index([email])
 }
 
-model Payment {
-  id                      String        @id @default(cuid())
-  userId                  String
-  provider                String
-  invoicePayload          String        @unique
-  currency                String
-  amount                  Int
-  status                  PaymentStatus @default(PENDING)
-  telegramChargeId        String?       @unique
-  telegramTransactionId   String?       @unique
-  rawUpdate               Json?
-  confirmedAt             DateTime?
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
-  user                    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String
+  provider               SubscriptionProvider
+  providerSubscriptionId String             @unique
+  tier                   SubscriptionTier
+  status                 SubscriptionStatus
+  currentPeriodEnd       DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([tier])
+  @@index([userId, status])
+  @@index([currentPeriodEnd])
 }
 
-model AccessGrant {
-  id             String            @id @default(cuid())
-  userId         String
-  invoicePayload String            @unique
-  status         AccessGrantStatus @default(PENDING)
-  inviteLink     String?
-  inviteLinkName String?
-  grantedAt      DateTime?
-  expiresAt      DateTime?
-  revokedAt      DateTime?
-  createdAt      DateTime          @default(now())
-  updatedAt      DateTime          @updatedAt
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+model TelegramChannel {
+  id          String           @id @default(cuid())
+  tier        SubscriptionTier
+  chatId      BigInt           @unique
+  title       String
+  inviteLinks InviteLink[]
+  createdAt   DateTime         @default(now())
+
+  @@index([tier])
 }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
+model InviteLink {
+  id                 String          @id @default(cuid())
+  userId             String
+  channelId          String
+  inviteLink         String          @unique
+  expiresAt          DateTime
+  createsJoinRequest Boolean         @default(false)
+  usedAt             DateTime?
+  createdAt          DateTime        @default(now())
+  user               User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel            TelegramChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([channelId])
+  @@index([expiresAt])
+  @@index([usedAt])
+  @@index([userId, channelId])
 }
 
-enum AccessGrantStatus {
-  PENDING
-  ACTIVE
-  REVOKED
-  EXPIRED
+model WebhookEvent {
+  id          String          @id @default(cuid())
+  provider    WebhookProvider
+  eventId     String
+  payload     Json
+  processedAt DateTime?
+  createdAt   DateTime        @default(now())
+
+  @@unique([provider, eventId])
+  @@index([processedAt])
+}
+
+enum SubscriptionProvider {
+  tribute
+}
+
+enum WebhookProvider {
+  tribute
+}
+
+enum SubscriptionTier {
+  basic
+  premium
+  vip
+}
+
+enum SubscriptionStatus {
+  active
+  past_due
+  canceled
+  expired
 }

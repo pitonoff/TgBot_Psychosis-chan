@@ -10,7 +10,8 @@ const envSchema = z.object({
   TELEGRAM_WEBHOOK_SECRET: z.string().min(16),
   TELEGRAM_CHANNEL_ID: z.coerce.bigint(),
   TELEGRAM_STARS_PRICE: z.coerce.number().int().positive().default(100),
-  TELEGRAM_INVITE_LINK_EXPIRE_HOURS: z.coerce.number().int().positive().max(24 * 30).default(24)
+  TELEGRAM_INVITE_LINK_EXPIRE_HOURS: z.coerce.number().int().positive().max(24 * 30).default(24),
+  TRIBUTE_WEBHOOK_SECRET: z.string().min(16)
 });
 
 export type AppConfig = z.infer<typeof envSchema>;
